@@ -1,0 +1,7 @@
+name: mruby-ifaddr
+description: IFAddr class
+author: pyama86
+website: https://github.com/pyama86/mruby-ifaddr
+protocol: git
+repository: https://github.com/pyama86/mruby-ifaddr.git
+license: MIT
