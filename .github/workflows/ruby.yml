@@ -15,5 +15,5 @@ jobs:
         ruby-version: 2.6.x
     - name: Build and test with Rake
       run: |
-        gem install rake
+        cd /tmp && gem install rake && cd -
         rake test
