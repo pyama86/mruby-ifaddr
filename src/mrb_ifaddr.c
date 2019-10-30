@@ -29,8 +29,11 @@ static const struct mrb_data_type mrb_ifaddr_data_type = {
 static mrb_value mrb_ifaddr_get(mrb_state *mrb, mrb_value self)
 {
   char *ifname;
+  char ip[INET_ADDRSTRLEN];
+  char result[256];
   mrb_int len;
   int fd;
+  int ret;
   struct ifreq ifr;
 
   mrb_get_args(mrb, "s", &ifname, &len);
@@ -42,13 +45,20 @@ static mrb_value mrb_ifaddr_get(mrb_state *mrb, mrb_value self)
   ifr.ifr_addr.sa_family = AF_INET;
 
   strncpy(ifr.ifr_name, ifname, IFNAMSIZ - 1);
-  int ret = ioctl(fd, SIOCGIFADDR, &ifr);
+  ret = ioctl(fd, SIOCGIFADDR, &ifr);
   if (ret == -1) {
     mrb_raise(mrb, E_RUNTIME_ERROR, "can't get addr");
   }
+  strncpy(ip, inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr), INET_ADDRSTRLEN);
+
+  ret = ioctl(fd, SIOCGIFNETMASK, &ifr);
+  if (ret == -1) {
+    mrb_raise(mrb, E_RUNTIME_ERROR, "can't get subnet");
+  }
 
   close(fd);
-  return mrb_str_new_cstr(mrb, inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr));
+  sprintf(result, "%s/%s", ip, inet_ntoa(((struct sockaddr_in *)&ifr.ifr_netmask)->sin_addr));
+  return mrb_str_new_cstr(mrb, result);
 }
 
 void mrb_mruby_ifaddr_gem_init(mrb_state *mrb)
